@@ -50,17 +50,17 @@ namespace DesignTechHomesTest.Data
                 entity.Property(p => p.State).HasMaxLength(100);
                 entity.Property(p => p.PostalCode).HasMaxLength(30);
 
-                entity.HasOne(p => p.CreatedByUser).WithMany()
-                      .HasForeignKey(p => p.CreatedBy)
-                      .OnDelete(DeleteBehavior.Restrict);
+                //entity.HasOne(p => p.CreatedByUser).WithMany()
+                //      .HasForeignKey(p => p.CreatedBy)
+                //      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(p => p.Client).WithMany(c => c.Projects)
                       .HasForeignKey(p => p.ClientId)
                       .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(p => p.ModifiedByUser).WithMany()
-                      .HasForeignKey(p => p.ModifiedBy)
-                      .OnDelete(DeleteBehavior.Restrict);
+                //entity.HasOne(p => p.ModifiedByUser).WithMany()
+                //      .HasForeignKey(p => p.ModifiedBy)
+                //      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasMany(p => p.ImageUploads).WithOne(i => i.Project)
                       .HasForeignKey(i => i.ProjectId);

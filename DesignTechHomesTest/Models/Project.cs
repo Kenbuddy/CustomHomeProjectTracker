@@ -38,11 +38,14 @@ namespace DesignTechHomesTest.Models
         public string? State { get; set; }
 
         public string? PostalCode { get; set; } = string.Empty;
+      
 
-
-
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime? StartDate { get; set; }
 
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime? EstimatedCompletionDate { get; set; }
 
         public ProjectStatus Status { get; set; } = ProjectStatus.NotStarted;

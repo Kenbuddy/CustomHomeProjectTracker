@@ -2,6 +2,40 @@
     ViewData["Title"] = "Clients Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Clients</h1>
+
+@model IEnumerable<DesignTechHomesTest.Models.Client>
+
+<div class="container">
+    <div class="text-center">
+        <h1 class="display-4">Clients</h1>
+    </div>
+    <h2>Clients</h2>
+    <a class="btn btn-success mb-3" href="@Url.Action("CreateClient")">New Client</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Email Address</th>
+                <th>Phone Number</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var client in Model)
+            {
+                <tr>
+                    <td>@client.FullName</td>
+                    <td>@client.EmailAddress</td>
+                    <td>@client.PhoneNumber</td>
+                    <td>
+                        <a class="btn btn-primary" href="@Url.Action("EditClient", new { id = client.Id })">Edit</a>
+                        <form asp-action="DeleteClient" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@client.Id" />
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this client?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

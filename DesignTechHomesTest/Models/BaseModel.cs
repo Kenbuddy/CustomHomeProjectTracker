@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.ComponentModel.DataAnnotations;
 
 namespace DesignTechHomesTest.Models
@@ -7,24 +8,21 @@ namespace DesignTechHomesTest.Models
     {
         #region Audit Properties
 
+        [BindNever]
         public DateTime CreatedOn { get; set; }
 
-        [Required]
+        [BindNever]
         [MaxLength(450)]
         public string CreatedBy { get; set; }
 
-        [Required]
-        public IdentityUser? CreatedByUser { get; set; }
 
-        
-        
+
+        [BindNever]
         public DateTime ModifiedOn { get; set; }
 
-        [Required]
+        [BindNever]
         [MaxLength(450)]
         public string ModifiedBy { get; set; }
-
-        public IdentityUser? ModifiedByUser { get; set; }
 
         #endregion
     }

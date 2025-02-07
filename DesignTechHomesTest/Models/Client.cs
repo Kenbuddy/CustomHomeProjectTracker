@@ -16,7 +16,7 @@ namespace DesignTechHomesTest.Models
         public string LastName { get; set; }
 
         [NotMapped]
-        public string FullName => $"{FirstName} {LastName}";
+        public string FullName => $"{LastName}, {FirstName}";
 
 
 
