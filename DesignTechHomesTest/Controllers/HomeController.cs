@@ -1,13 +1,11 @@
-using System.Diagnostics;
-using System.Reflection;
-using DesignTechHomesTest.Data;
+using DesignTechHomesTest.Interfaces;
 using DesignTechHomesTest.Models;
 using DesignTechHomesTest.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace DesignTechHomesTest.Controllers
 {
@@ -16,7 +14,7 @@ namespace DesignTechHomesTest.Controllers
     {
         #region Field Members
 
-        private readonly ApplicationDbContext _context;
+        private IDbRepository _dbRepository;
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<IdentityUser> _userManager;
 
@@ -24,11 +22,11 @@ namespace DesignTechHomesTest.Controllers
 
         #region Constructors
 
-        public HomeController(ApplicationDbContext context, UserManager<IdentityUser> userManager, ILogger<HomeController> logger)
+        public HomeController(IDbRepository dbRepository, UserManager<IdentityUser> userManager, ILogger<HomeController> logger)
         {
-            _context = context;
             _logger = logger;
             _userManager = userManager;
+            _dbRepository = dbRepository;
         }
 
         #endregion
@@ -38,9 +36,12 @@ namespace DesignTechHomesTest.Controllers
         #region Home Page
 
         [AllowAnonymous]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var projects = await _dbRepository.GetAllProjectsAsync();
+
+            var groupedProjects = projects.GroupBy(p => p.Status).OrderBy(g => g.Key);
+            return View(groupedProjects);
         }
 
         public IActionResult Privacy()
@@ -54,14 +55,14 @@ namespace DesignTechHomesTest.Controllers
 
         public async Task<IActionResult> Clients()
         {
-            var clients = await _context.Clients.ToListAsync();
+            var clients = await _dbRepository.GetAllClientsAsync();
             return View(clients);
         }
 
         [HttpGet]
         public async Task<IActionResult> EditClient(int id)
         {
-            var client = await _context.Clients.FindAsync(id);
+            var client = await _dbRepository.GetClientAsync(id);
             if (client == null)
             {
                 return NotFound();
@@ -76,7 +77,7 @@ namespace DesignTechHomesTest.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             // Retrieve existing client to preserve CreatedBy and CreatedOn
-            var existingClient = await _context.Clients.AsNoTracking().FirstOrDefaultAsync(c => c.Id == client.Id);
+            var existingClient = await _dbRepository.GetClientNoTrackingAsync(client.Id);
             if (existingClient == null)
             {
                 return NotFound();
@@ -84,21 +85,19 @@ namespace DesignTechHomesTest.Controllers
 
             client.CreatedBy = existingClient.CreatedBy;
             client.CreatedOn = existingClient.CreatedOn;
-
             client.ModifiedBy = user?.UserName ?? "Unknown";
             client.ModifiedOn = DateTime.Now;
 
             if (!TryValidateModel(client))
             {
                 // Reload clients to pass back to view
-                var clients = await _context.Clients.ToListAsync();
+                var clients = await _dbRepository.GetAllClientsAsync();
                 ViewData["Clients"] = clients;
 
                 return View("Clients", clients);
             }
 
-             _context.Update(client);
-            await _context.SaveChangesAsync();
+            await _dbRepository.UpdateClientAsync(client);
             return RedirectToAction(nameof(Clients));
         }
 
@@ -131,26 +130,20 @@ namespace DesignTechHomesTest.Controllers
                 DiagnosticUtils.GetModelStateErrors(this, nameof(CreateClient));
 
                 // Reload clients to pass back to view
-                var clients = await _context.Clients.ToListAsync();
+                var clients = await _dbRepository.GetAllClientsAsync();
                 ViewData["Clients"] = clients;
 
                 return View("Clients", clients);
             }
 
-            _context.Add(client);
-            await _context.SaveChangesAsync();
+            await _dbRepository.AddClientAsync(client);
             return RedirectToAction(nameof(Clients));
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteClient(int id)
         {
-            var client = await _context.Clients.FindAsync(id);
-            if (client != null)
-            {
-                _context.Clients.Remove(client);
-                await _context.SaveChangesAsync();
-            }
+            await _dbRepository.DeleteClientAsync(id);
             return RedirectToAction(nameof(Clients));
         }
 
@@ -160,24 +153,22 @@ namespace DesignTechHomesTest.Controllers
 
         public async Task<IActionResult> Projects()
         {
-            var projects = await _context.Projects.Include(p => p.Client).ToListAsync();
+            var projects = await _dbRepository.GetAllProjectsAsync();
             return View(projects);
         }
 
         [HttpGet]
         public async Task<IActionResult> EditProject(int id)
         {
-            var project = await _context.Projects.FindAsync(id);
+            var project = await _dbRepository.GetProjectAsync(id);
             if (project == null)
             {
                 return NotFound();
             }
 
             // Supply the SelectList for the Client dropdown
-            var clients = await _context.Clients
-                                    .OrderBy(c => c.LastName)
-                                    .ThenBy(c => c.FirstName)
-                                    .ToListAsync();
+            var clients = await _dbRepository.GetAllClientsAsync();
+                                    
             ViewData["Clients"] = new SelectList(clients, "Id", "FullName");
 
             return View(project);
@@ -189,7 +180,7 @@ namespace DesignTechHomesTest.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             // Retrieve existing client to preserve CreatedBy and CreatedOn
-            var existingProject = await _context.Projects.AsNoTracking().FirstOrDefaultAsync(c => c.Id == project.Id);
+            var existingProject = await _dbRepository.GetProjectNoTrackingAsync(project.Id);
             if (existingProject == null)
             {
                 return NotFound();
@@ -197,7 +188,6 @@ namespace DesignTechHomesTest.Controllers
 
             project.CreatedBy = existingProject.CreatedBy;
             project.CreatedOn = existingProject.CreatedOn;
-
             project.ModifiedBy = user?.UserName ?? "Unknown";
             project.ModifiedOn = DateTime.Now;
 
@@ -206,14 +196,13 @@ namespace DesignTechHomesTest.Controllers
                 DiagnosticUtils.GetModelStateErrors(this, nameof(EditProject));
 
                 // Reload projects to pass back to view
-                var projects = await _context.Projects.Include(p => p.Client).ToListAsync();
+                var projects = await _dbRepository.GetAllProjectsAsync();
                 ViewData["Projects"] = projects;
 
                 return View("Projects", projects);
             }
 
-            _context.Update(project);
-            await _context.SaveChangesAsync();
+            await _dbRepository.UpdateProjectAsync(project);
             return RedirectToAction(nameof(Projects));
         }
 
@@ -221,7 +210,8 @@ namespace DesignTechHomesTest.Controllers
         public async Task<IActionResult> CreateProject()
         {
             // Must have a client defined first.
-            if (!_context.Clients.Any())
+            var hasClients = await _dbRepository.HasClientsAsync();
+            if (!hasClients)
             {
                 TempData["NoClientsMessage"] = "No clients available. Please add a client before creating a project.";
                 return RedirectToAction(nameof(Projects));
@@ -239,10 +229,8 @@ namespace DesignTechHomesTest.Controllers
             };
 
             // Supply the SelectList for the Client dropdown
-            var clients = await _context.Clients
-                                    .OrderBy(c => c.LastName)
-                                    .ThenBy(c => c.FirstName)
-                                    .ToListAsync();
+            var clients = await _dbRepository.GetAllClientsAsync();
+                                  
             ViewData["Clients"] = new SelectList(clients, "Id", "FullName");
             return View("EditProject", project);
         }
@@ -261,26 +249,20 @@ namespace DesignTechHomesTest.Controllers
                 DiagnosticUtils.GetModelStateErrors(this, nameof(CreateProject));
 
                 // Reload projects to pass back to view
-                var projects = await _context.Projects.ToListAsync();
+                var projects = await _dbRepository.GetAllProjectsAsync();
                 ViewData["Projects"] = projects;
 
                 return View("Projects", projects);
             }
 
-            _context.Add(project);
-            await _context.SaveChangesAsync();
+            await _dbRepository.AddProjectAsync(project);
             return RedirectToAction(nameof(Projects));
         }
 
         [HttpPost]
         public async Task<IActionResult> DeleteProject(int id)
         {
-            var project = await _context.Projects.FindAsync(id);
-            if (project != null)
-            {
-                _context.Projects.Remove(project);
-                await _context.SaveChangesAsync();
-            }
+            await _dbRepository.DeleteProjectAsync(id);
             return RedirectToAction(nameof(Projects));
         }
 
