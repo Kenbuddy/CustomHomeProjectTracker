@@ -1,0 +1,30 @@
+﻿@model DesignTechHomesTest.Models.ProjectNote
+
+@{
+    ViewData["Title"] = "Add/Edit Project Note";
+}
+
+<h2>Add/Edit Project Note</h2>
+
+<form asp-action="@(Model.Id == 0 ? "AddNote" : "EditNote")" method="post">
+    <div class="form-group  mb-3">
+        <label asp-for="Timestamp" class="control-label"></label>
+        <input asp-for="Timestamp" class="form-control" readonly />
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Note" class="control-label"></label>
+        <textarea asp-for="Note" class="form-control" style="height: 450px;"></textarea>
+        <span asp-validation-for="Note" class="text-danger"></span>
+    </div>
+    <input type="hidden" asp-for="ProjectId" />
+    <div class="form-group mb-3">
+        <input type="submit" value="Save" class="btn btn-primary" />
+        <a asp-action="EditProject" asp-route-id="@Model.ProjectId" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

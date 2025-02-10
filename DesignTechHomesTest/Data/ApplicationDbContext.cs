@@ -63,10 +63,10 @@ namespace DesignTechHomesTest.Data
                 //      .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasMany(p => p.ImageUploads).WithOne(i => i.Project)
-                      .HasForeignKey(i => i.ProjectId);
+                      .HasForeignKey(i => i.ProjectId).OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasMany(p => p.ProjectNotes).WithOne(n => n.Project)
-                      .HasForeignKey(n => n.ProjectId);
+                      .HasForeignKey(n => n.ProjectId).OnDelete(DeleteBehavior.Cascade);
             });
 
             // Client entity configuration
@@ -88,27 +88,27 @@ namespace DesignTechHomesTest.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // ProjectNote entity configuration
-            modelBuilder.Entity<ProjectNote>(entity =>
-            {
-                entity.HasKey(n => n.Id);
-                entity.Property(n => n.Note).IsRequired();
+            //// ProjectNote entity configuration
+            //modelBuilder.Entity<ProjectNote>(entity =>
+            //{
+            //    entity.HasKey(n => n.Id);
+            //    entity.Property(n => n.Note).IsRequired();
 
-                entity.HasOne(n=> n.Project).WithMany(p => p.ProjectNotes)
-                      .HasForeignKey(n => n.ProjectId)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
+            //    entity.HasOne(n=> n.Project).WithMany(p => p.ProjectNotes)
+            //          .HasForeignKey(n => n.ProjectId)
+            //          .OnDelete(DeleteBehavior.Restrict);
+            //});
 
-            // ImageUpload entity configuration
-            modelBuilder.Entity<ImageUpload>(entity =>
-            {
-                entity.HasKey(n => n.Id);
-                entity.Property(i => i.ImageData).IsRequired();
+            //// ImageUpload entity configuration
+            //modelBuilder.Entity<ImageUpload>(entity =>
+            //{
+            //    entity.HasKey(n => n.Id);
+            //    entity.Property(i => i.ImageData).IsRequired();
 
-                entity.HasOne(i => i.Project).WithMany(p => p.ImageUploads)
-                      .HasForeignKey(i => i.ProjectId)
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
+            //    entity.HasOne(i => i.Project).WithMany(p => p.ImageUploads)
+            //          .HasForeignKey(i => i.ProjectId)
+            //          .OnDelete(DeleteBehavior.Restrict);
+            //});
         }
 
         #endregion

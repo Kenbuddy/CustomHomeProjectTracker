@@ -76,7 +76,9 @@ namespace DesignTechHomesTest.Data
 
         public async Task<Project?> GetProjectAsync(int id)
         {
-            return await _context.Projects.FindAsync(id);
+            return await _context.Projects
+            .Include(p => p.ProjectNotes)
+            .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<Project?> GetProjectNoTrackingAsync(int id)

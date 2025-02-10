@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net.Http;
@@ -281,6 +282,100 @@ namespace DesignTechHomesTest.Controllers
             await _dbRepository.DeleteProjectAsync(id);
             return RedirectToAction(nameof(Projects));
         }
+
+        #region Project Notes
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult AddNote(int projectId)
+        {
+            var note = new ProjectNote
+            {
+                ProjectId = projectId,
+                Timestamp = DateTime.Now
+            };
+
+            return View("AddEditNote", note);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AddNote(ProjectNote projectNote)
+        {
+            if (ModelState.IsValid)
+            {
+                var project = await _dbRepository.GetProjectAsync(projectNote.ProjectId);
+                if (project == null)
+                {
+                    return NotFound();
+                }
+               
+                project.ProjectNotes.Add(projectNote);
+                await _dbRepository.UpdateProjectAsync(project);
+               
+                return RedirectToAction(nameof(EditProject), new { id = projectNote.ProjectId });
+            }
+
+            return View("AddEditNote", projectNote);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> EditNote(int id)
+        {
+            var project = await _dbRepository.GetProjectAsync(id);
+            var projectNote = project?.ProjectNotes.FirstOrDefault(n => n.Id == id);
+            if (projectNote == null)
+            {
+                return NotFound();
+            }
+
+            return View("AddEditNote", projectNote);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> EditNote(ProjectNote projectNote)
+        {
+            if (ModelState.IsValid)
+            {
+                var project = await _dbRepository.GetProjectAsync(projectNote.ProjectId);
+                if (project == null)
+                {
+                    return NotFound();
+                }
+
+                var existingNote = project.ProjectNotes.FirstOrDefault(n => n.Id == projectNote.Id);
+                if (existingNote != null)
+                {
+                    existingNote.Note = projectNote.Note;
+                    existingNote.Timestamp = projectNote.Timestamp;
+                    await _dbRepository.UpdateProjectAsync(project);
+                }
+            }
+
+            return RedirectToAction(nameof(EditProject), new { id = projectNote.ProjectId });
+        }
+
+        [Authorize]
+        public async Task<IActionResult> DeleteNote(int projectId, int noteId)
+        {
+            var project = await _dbRepository.GetProjectAsync(projectId);
+            var note = project?.ProjectNotes.FirstOrDefault(n => n.Id == noteId);
+            if (project != null && note != null)
+            {
+                project.ProjectNotes.Remove(note);
+                await _dbRepository.UpdateProjectAsync(project);
+            }
+            return RedirectToAction(nameof(EditProject), new { id = projectId });
+        }
+
+        #endregion
+
+        #region Project Images
+
+
+        #endregion
 
         #endregion
 

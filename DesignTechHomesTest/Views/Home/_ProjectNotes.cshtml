@@ -1,0 +1,24 @@
+﻿@model IList<DesignTechHomesTest.Models.ProjectNote>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Note</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var note in Model)
+        {
+            <tr>
+                <td>@note.Timestamp.ToString("g")</td>
+                <td>@note.Note</td>
+                <td>
+                    <a asp-action="EditNote" asp-route-id="@note.Id" class="btn btn-primary">Edit</a>
+                    <a asp-action="DeleteNote" asp-route-projectId="@note.ProjectId" asp-route-noteId="@note.Id" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

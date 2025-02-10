@@ -89,20 +89,18 @@
 </div>
 <button class="btn btn-secondary" onclick="addNote()">Add Note</button>
 
-<hr />
-
-<h3>Image Uploads</h3>
-<div id="imageUploads">
-    @Html.Partial("_ImageUploads", Model.ImageUploads)
-</div>
-<button class="btn btn-secondary" onclick="uploadImage()">Upload Image</button>
 
 <script>
     function addNote() {
-        // Open a modal or redirect to add note page
-    }
+        var projectId = @Model.Id;
+        if (projectId == 0)
+        {
+            alert('ERROR: You must save the Project first.');
+            return;
+        }
 
-    function uploadImage() {
-        // Open a modal or redirect to upload image page
+        var url = '@Url.Action("AddNote", "Home", new { projectId = "__projectId__" })';
+        url = url.replace('__projectId__', projectId);
+        window.location.href = url;
     }
 </script>
