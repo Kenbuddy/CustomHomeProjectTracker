@@ -1,0 +1,47 @@
+﻿@model DesignTechHomesTest.ViewModels.ProjectGridViewModel
+
+<style>
+    .column-name {
+        width: 35%;
+    }
+
+    .column-client {
+        width: 25%;
+    }
+
+    .column-start-date {
+        width: 20%;
+    }
+
+    .column-est-compl-date {
+        width: 20%;
+    }
+</style>
+
+@foreach (var statusGroup in Model.GroupedProjects)
+{
+    <div class="status-group">
+        <h4>@statusGroup.Status (@statusGroup.Projects.Count())</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="column-name">Project Name</th>
+                    <th class="column-client">Client</th>
+                    <th class="column-start-date">Start Date</th>
+                    <th class="column-est-compl-date">Est Completion Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var project in statusGroup.Projects)
+                {
+                    <tr>
+                        <td class="column-name">@project.Name</td>
+                        <td class="column-client">@project.Client?.FullName</td>
+                        <td class="column-start-date">@project.StartDate?.ToString("yyyy-MM-dd")</td>
+                        <td class="column-est-compl-date">@project.EstimatedCompletionDate?.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

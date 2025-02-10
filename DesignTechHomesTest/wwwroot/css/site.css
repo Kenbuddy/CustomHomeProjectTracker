@@ -20,3 +20,25 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+
+.filter-bar-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.filter-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-bar label {
+    margin-right: 10px;
+}
+
+.filter-bar input[type="date"] {
+    margin-right: 20px;
+    width: 150px;
+}

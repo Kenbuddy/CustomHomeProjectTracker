@@ -22,9 +22,15 @@ builder.Services.AddControllersWithViews(options =>
 }).AddViewOptions(options =>
 {
     options.HtmlHelperOptions.ClientValidationEnabled = true;
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.WriteIndented = true; 
 });
 
 builder.Services.AddRazorPages();
+
+builder.Services.AddHttpClient();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

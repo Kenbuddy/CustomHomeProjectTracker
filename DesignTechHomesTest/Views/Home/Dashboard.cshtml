@@ -5,3 +5,46 @@
 <div class="text-center">
     <h1 class="display-4">Dashboard</h1>
 </div>
+
+@model DesignTechHomesTest.ViewModels.ProjectGridViewModel
+
+<div class="filter-bar-container">
+    <div class="filter-bar">
+        <label for="startDateFrom">Start Date From:</label>
+        <input type="date" id="startDateFrom" name="startDateFrom" value="@Model.StartDateFrom?.ToString("yyyy-MM-dd")" />
+
+        <label for="startDateTo">To:</label>
+        <input type="date" id="startDateTo" name="startDateTo" value="@Model.StartDateTo?.ToString("yyyy-MM-dd")" />
+
+        <button type="button" onclick="filterProjects()">Apply</button>
+    </div>
+</div>
+
+<div id="projectGrid">
+    @* Project grid will be rendered here *@
+</div>
+
+<script>
+    function filterProjects() {
+        var startDateFrom = document.getElementById('startDateFrom').value;
+        var startDateTo = document.getElementById('startDateTo').value;
+
+        var query = '';
+        if (startDateFrom) {
+            query += 'startDateFrom=' + startDateFrom + '&';
+        }
+        if (startDateTo) {
+            query += 'startDateTo=' + startDateTo;
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/Home/Dashboard?' + query, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                document.getElementById('projectGrid').innerHTML = xhr.responseText;
+            }
+        };
+        xhr.send();
+    }
+</script>

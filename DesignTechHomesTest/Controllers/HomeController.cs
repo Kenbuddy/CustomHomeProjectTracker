@@ -1,11 +1,14 @@
 using DesignTechHomesTest.Interfaces;
 using DesignTechHomesTest.Models;
 using DesignTechHomesTest.Utilities;
+using DesignTechHomesTest.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Net.Http;
 
 namespace DesignTechHomesTest.Controllers
 {
@@ -17,16 +20,18 @@ namespace DesignTechHomesTest.Controllers
         private IDbRepository _dbRepository;
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly HttpClient _httpClient;
 
         #endregion
 
         #region Constructors
 
-        public HomeController(IDbRepository dbRepository, UserManager<IdentityUser> userManager, ILogger<HomeController> logger)
+        public HomeController(IDbRepository dbRepository, UserManager<IdentityUser> userManager, ILogger<HomeController> logger, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _userManager = userManager;
             _dbRepository = dbRepository;
+            _httpClient = httpClientFactory.CreateClient();
         }
 
         #endregion
@@ -153,8 +158,19 @@ namespace DesignTechHomesTest.Controllers
 
         public async Task<IActionResult> Projects()
         {
-            var projects = await _dbRepository.GetAllProjectsAsync();
+            var projects = await GetProjectsFromApiAsync();
+            //var projects = await _dbRepository.GetAllProjectsAsync();
             return View(projects);
+        }
+
+        private async Task<IEnumerable<Project>> GetProjectsFromApiAsync()
+        {
+            var response = await _httpClient.GetAsync("https://localhost:7152/api/Projects");
+            response.EnsureSuccessStatusCode();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            var projects = JsonConvert.DeserializeObject<IEnumerable<Project>>(responseString);
+            return projects ?? new List<Project>();
         }
 
         [HttpGet]
@@ -270,9 +286,44 @@ namespace DesignTechHomesTest.Controllers
 
         #region Dashboard Page
 
-        public IActionResult Dashboard()
+        [Authorize]
+        public async Task<IActionResult> Dashboard(DateTime? startDateFrom, DateTime? startDateTo)
         {
-            return View();
+            var projects = await _dbRepository.GetAllProjectsAsync();
+
+            if (startDateFrom.HasValue)
+            {
+                projects = projects.Where(p => p.StartDate >= startDateFrom.Value);
+            }
+
+            if (startDateTo.HasValue)
+            {
+                projects = projects.Where(p => p.StartDate <= startDateTo.Value);
+            }
+
+            var groupedProjects = projects
+                .GroupBy(p => p.Status)
+                .Select(g => new StatusGroupViewModel
+                {
+                    Status = g.Key.GetDescription(),
+                    Projects = g
+                });
+
+            var model = new ProjectGridViewModel
+            {
+                StartDateFrom = startDateFrom,
+                StartDateTo = startDateTo,
+                GroupedProjects = groupedProjects
+            };
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_ProjectGrid", model);
+            }
+            else
+            {
+                return View(model);
+            }
         }
 
         #endregion

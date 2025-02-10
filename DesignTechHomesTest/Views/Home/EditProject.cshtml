@@ -80,3 +80,29 @@
         <a href="@Url.Action("Projects")" class="btn btn-secondary ml-2">Cancel</a>
     </form>
 </div>
+
+<hr />
+
+<h3>Project Notes</h3>
+<div id="projectNotes">
+    @Html.Partial("_ProjectNotes", Model.ProjectNotes)
+</div>
+<button class="btn btn-secondary" onclick="addNote()">Add Note</button>
+
+<hr />
+
+<h3>Image Uploads</h3>
+<div id="imageUploads">
+    @Html.Partial("_ImageUploads", Model.ImageUploads)
+</div>
+<button class="btn btn-secondary" onclick="uploadImage()">Upload Image</button>
+
+<script>
+    function addNote() {
+        // Open a modal or redirect to add note page
+    }
+
+    function uploadImage() {
+        // Open a modal or redirect to upload image page
+    }
+</script>
