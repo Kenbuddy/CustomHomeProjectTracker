@@ -1,5 +1,6 @@
 using DesignTechHomesTest.Data;
 using DesignTechHomesTest.Interfaces;
+using DesignTechHomesTest.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,8 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddScoped(typeof(LogHelper<>));  // Register generic LogHelper
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
@@ -40,6 +43,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.SlidingExpiration = true;
 });
+
+// Add logging services
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();        // Use console logging only for this app.
 
 var app = builder.Build();
 

@@ -15,7 +15,7 @@ namespace DesignTechHomesTest.Data
 
         public DbSet<Client> Clients { get; set; }
 
-        public DbSet<ProjectNote> ProjectNotess { get; set; }
+        public DbSet<ProjectNote> ProjectNotes { get; set; }
 
         public DbSet<ImageUpload> ImageUploads { get; set; }
 

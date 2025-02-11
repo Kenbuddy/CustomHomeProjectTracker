@@ -16,7 +16,10 @@
         <textarea asp-for="Note" class="form-control" style="height: 450px;"></textarea>
         <span asp-validation-for="Note" class="text-danger"></span>
     </div>
+
+    <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="ProjectId" />
+   
     <div class="form-group mb-3">
         <input type="submit" value="Save" class="btn btn-primary" />
         <a asp-action="EditProject" asp-route-id="@Model.ProjectId" class="btn btn-secondary">Cancel</a>
